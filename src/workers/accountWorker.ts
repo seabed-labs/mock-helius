@@ -100,7 +100,10 @@ export class AccountWorker extends AbstractWorker implements IWorker {
     const body = accounts.map((account) => {
       return {
         account: {
-          parsed: account,
+          parsed: {
+            ...account,
+            data: [account.data.toString("base64"), "base64"],
+          },
         },
       };
     });
