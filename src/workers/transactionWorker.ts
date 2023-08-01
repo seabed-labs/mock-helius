@@ -4,7 +4,7 @@ import { IWorker } from "./types";
 import { TYPES } from "../ioCTypes";
 import { IConnection } from "../rpcConnection";
 import { IConfig } from "../config";
-import { ConfirmedSignatureInfo, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import superagent from "superagent";
 import { delay } from "../utils";
 
@@ -40,9 +40,9 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
       );
       this.latestTxSig = signatures[0]?.signature;
     }
-    // while (this.enabled) {
-    //   await this.backfillToSlot();
-    // }
+    while (this.enabled) {
+      await this.backfillToSlot();
+    }
   }
 
   onStart(): Promise<void> {
@@ -88,7 +88,7 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
         })
       )
     );
-    console.log("sending transactions");
+    console.log(`sending ${signatures.length} transactions...`);
     try {
       await superagent.post(this.transactionWebhookUrl).send(txs);
     } catch (e) {
