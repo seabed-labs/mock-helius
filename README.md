@@ -15,4 +15,6 @@ PROGRAM_ID="Vote111111111111111111111111111111111111111"
 # Your path
 ACCOUNT_WEBHOOK_URL="http://localhost:3000/account"
 TRANSACTION_WEBHOOK_URL="http://localhost:3000/tx"
+
+yarn run ts-node src/index.ts
 ```
