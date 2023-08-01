@@ -40,9 +40,16 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
       );
       this.latestTxSig = signatures[0]?.signature;
     }
-    while (this.enabled) {
-      await this.backfillToSlot();
-    }
+    // while (this.enabled) {
+    //   await this.backfillToSlot();
+    // }
+  }
+
+  onStart(): Promise<void> {
+    return Promise.resolve();
+  }
+  onStop(): Promise<void> {
+    return Promise.resolve();
   }
 
   async backfillToSlot(): Promise<void> {
