@@ -14,7 +14,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "lib": ["es6", "dom"],
-    "types": ["reflect-metadata"],
+    "types": ["node", "reflect-metadata"],
     "skipLibCheck": true
   },
   "ts-node": {
