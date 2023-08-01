@@ -18,3 +18,10 @@ TRANSACTION_WEBHOOK_URL="http://localhost:3000/tx"
 
 yarn run ts-node src/index.ts
 ```
+
+## Docker
+
+```bash
+docker build -t mock-helius .
+docker run --network host --env-file ./.env mock-helius
+```
