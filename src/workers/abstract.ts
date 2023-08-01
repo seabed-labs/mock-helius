@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 
 export abstract class AbstractWorker {
-  private enabled: boolean;
+  enabled: boolean;
   private workerPromise: Promise<void>;
 
   constructor() {
