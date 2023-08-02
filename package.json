@@ -1,5 +1,10 @@
 {
   "name": "mock-helius",
+  "version": "0.1.0",
+  "description": "Helius Mock Webhook Service",
+  "author": "Dcaf Labs",
+  "license": "MIT",
+  "private": true,
   "packageManager": "yarn@3.6.0",
   "scripts": {
     "build": "tsc",

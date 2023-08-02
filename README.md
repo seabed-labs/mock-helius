@@ -33,15 +33,15 @@ version: "3"
 
 services:
   mock_helius:
-    build: git@github.com:dcaf-labs/mock-helius.git
+    build: git@github.com:dcaf-labs/mock-helius.git#main
     environment:
       - RPC_REST_URL=http://localhost:8899
       - RPC_WEBSOCKET_URL=ws://localhost:8900
       - SHOULD_BACKFILL_ACCOUNTS=true
       - SHOULD_BACKFILL_TRANSACTIONS=true
       - PROGRAM_ID=74XYB4agZ83msRxmTGvNDc8D2z8T55mfGfz3FAneNSKk
-      - ACCOUNT_WEBHOOK_URL=http://localhost:3000/account
-      - TRANSACTION_WEBHOOK_URL=http://localhost:3000/tx
+      - ACCOUNT_WEBHOOK_URL=http://localhost:3000/webhook/account
+      - TRANSACTION_WEBHOOK_URL=http://localhost:3000/webhook/tx
 networks:
   default:
     name: local
