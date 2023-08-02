@@ -2,9 +2,8 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { Container, decorate, injectable } from "inversify";
+import { Container } from "inversify";
 import { buildProviderModule } from "inversify-binding-decorators";
-import { Connection as Web3Connection } from "@solana/web3.js";
 import { TYPES } from "../ioCTypes";
 import { IConfig, Config } from "../config";
 import { Connection, IConnection } from "../rpcConnection";

@@ -5,8 +5,8 @@ import { IConnection } from "../rpcConnection";
 import { TYPES } from "../ioCTypes";
 import { IConfig } from "../config";
 import { AccountInfo, KeyedAccountInfo, PublicKey } from "@solana/web3.js";
-import superagent from "superagent";
-import { delay } from "../utils";
+import superagent, { ResponseError } from "superagent";
+import { delay, logSendError } from "../utils";
 
 @injectable()
 export class AccountWorker extends AbstractWorker implements IWorker {
@@ -30,7 +30,9 @@ export class AccountWorker extends AbstractWorker implements IWorker {
   }
 
   async run(): Promise<void> {
-    console.log(`running ${this.name} worker`);
+    console.log(
+      `running ${this.name} worker, shouldBackfillAccounts: ${this.shouldBackfillAccounts}`
+    );
     this.webSocketId = this.connection.onProgramAccountChange(
       this.programId,
       async (account: KeyedAccountInfo) => {
@@ -111,10 +113,9 @@ export class AccountWorker extends AbstractWorker implements IWorker {
     try {
       await superagent.post(this.accountWebhookUrl).send(body);
     } catch (e) {
-      console.error(e);
-      console.log("failed to send account, retrying after 500ms");
+      logSendError(body, e as ResponseError);
       await delay(500);
-      return this.sendWebhook(accounts, retryCount++, maxCount);
+      return this.sendWebhook(accounts, retryCount + 1, maxCount);
     }
   }
 

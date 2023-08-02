@@ -5,8 +5,8 @@ import { TYPES } from "../ioCTypes";
 import { IConnection } from "../rpcConnection";
 import { IConfig } from "../config";
 import { PublicKey } from "@solana/web3.js";
-import superagent from "superagent";
-import { delay } from "../utils";
+import superagent, { ResponseError } from "superagent";
+import { delay, logSendError } from "../utils";
 
 @injectable()
 export class TransactionWorker extends AbstractWorker implements IWorker {
@@ -21,6 +21,7 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
   ) {
     super();
     this.programId = config.programId;
+    console.log(this.programId.toString());
     this.transactionWebhookUrl = config.transactionWebhookUrl;
     this.shouldBackfill = config.shouldBackfillTransactions;
   }
@@ -30,8 +31,13 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
   }
 
   async run(): Promise<void> {
-    console.log(`running ${this.name} worker`);
+    console.log(
+      `running ${this.name} worker, shouldBackfill: ${this.shouldBackfill}`
+    );
     if (!this.shouldBackfill) {
+      console.log(
+        "not backfilling, setting latest signature to most recent transaction"
+      );
       const signatures = await this.connection.getSignaturesForAddress(
         this.programId,
         {
@@ -41,7 +47,7 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
       this.latestTxSig = signatures[0]?.signature;
     }
     while (this.enabled) {
-      await this.backfillToSlot();
+      await this.backfillToLatestTxSig();
     }
   }
 
@@ -52,8 +58,9 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
     return Promise.resolve();
   }
 
-  async backfillToSlot(): Promise<void> {
-    const backfillUntilTxSig = this.latestTxSig;
+  async backfillToLatestTxSig(): Promise<void> {
+    let backfillUntilTxSig = this.latestTxSig;
+    console.log(`backfilling transactions until ${backfillUntilTxSig}`);
     let shouldUpdateLastTxSig = true;
     let shouldContinue = true;
     while (shouldContinue && this.enabled) {
@@ -69,6 +76,9 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
         shouldUpdateLastTxSig = false;
       }
       shouldContinue = signatures.length > 0;
+      if (shouldContinue) {
+        backfillUntilTxSig = signatures[signatures.length - 1];
+      }
     }
   }
 
@@ -92,10 +102,9 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
     try {
       await superagent.post(this.transactionWebhookUrl).send(txs);
     } catch (e) {
-      console.error(e);
-      console.log("failed to send transaction, retrying after 500ms");
+      logSendError(txs, e as ResponseError);
       await delay(500);
-      return this.sendWebhook(signatures, retryCount++, maxCount);
+      return this.sendWebhook(signatures, retryCount + 1, maxCount);
     }
   }
 
