@@ -68,12 +68,12 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
           until: backfillUntilTxSig,
         })
       ).map((signatureRes) => signatureRes.signature);
-      console.log(`found ${signatures.length} transactions to send`);
-      await this.sendWebhook(signatures, 0, 3);
       if (iteration === 0) {
         this.latestTxSig = signatures[0] ?? this.latestTxSig;
       }
       if (signatures.length) {
+        console.log(`found ${signatures.length} transactions to send`);
+        await this.sendWebhook(signatures, 0, 3);
         backfillUntilTxSig = signatures[signatures.length - 1];
         iteration += 1;
       } else {
