@@ -1,0 +1,36 @@
+{
+    "extends": [
+        "eslint:recommended",
+        "plugin:prettier/recommended",
+        "plugin:import/recommended",
+        "plugin:import/typescript",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+        "import/order": [
+            "error",
+            {
+                "groups": [
+                    "builtin",
+                    "external",
+                    "internal",
+                    "parent",
+                    "sibling",
+                    "index",
+                    "object",
+                    "type"
+                ],
+                "pathGroups": [
+                    {
+                        "pattern": "~/**",
+                        "group": "external"
+                    }
+                ],
+                "newlines-between": "always",
+                "alphabetize": { "order": "asc" }
+            }
+        ]
+    },
+    "ignorePatterns": ["dist", "node_modules"],
+    "root": true
+}
