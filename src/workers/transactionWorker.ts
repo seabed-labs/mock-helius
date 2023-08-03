@@ -38,13 +38,11 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
       console.log(
         "not backfilling, setting latest signature to most recent transaction"
       );
-      const signatures = await this.connection.getSignaturesForAddress(
-        this.programId,
-        {
+      this.latestTxSig = (
+        await this.connection.getSignaturesForAddress(this.programId, {
           limit: 1,
-        }
-      );
-      this.latestTxSig = signatures[0]?.signature;
+        })
+      )[0]?.signature;
     }
     while (this.enabled) {
       await this.backfillToLatestTxSig();
@@ -60,10 +58,11 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
 
   async backfillToLatestTxSig(): Promise<void> {
     let backfillUntilTxSig = this.latestTxSig;
-    console.log(`backfilling transactions until ${backfillUntilTxSig}`);
-    let shouldUpdateLastTxSig = true;
-    let shouldContinue = true;
-    while (shouldContinue && this.enabled) {
+    let iteration = 0;
+    while (this.enabled) {
+      console.log(
+        `fetching transactions until ${this.latestTxSig}, iteration ${iteration}`
+      );
       const signatures = (
         await this.connection.getSignaturesForAddress(this.programId, {
           until: backfillUntilTxSig,
@@ -71,13 +70,14 @@ export class TransactionWorker extends AbstractWorker implements IWorker {
       ).map((signatureRes) => signatureRes.signature);
       console.log(`found ${signatures.length} transactions to send`);
       await this.sendWebhook(signatures, 0, 3);
-      if (shouldUpdateLastTxSig) {
-        this.latestTxSig = signatures[0];
-        shouldUpdateLastTxSig = false;
+      if (iteration === 0) {
+        this.latestTxSig = signatures[0] ?? this.latestTxSig;
       }
-      shouldContinue = signatures.length > 0;
-      if (shouldContinue) {
+      if (signatures.length) {
         backfillUntilTxSig = signatures[signatures.length - 1];
+        iteration += 1;
+      } else {
+        break;
       }
     }
   }
