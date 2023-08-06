@@ -1,5 +1,5 @@
 export interface IWorker {
-    get name(): string;
+    name: string;
     start(): Promise<void>;
     stop(): Promise<void>;
 }
